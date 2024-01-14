@@ -1,4 +1,5 @@
 import pygame as pg
+import random as r
 
 # 初期設定
 scale_factor = 2
@@ -68,6 +69,12 @@ def main():
     exit_flag = False
     exit_code = '000'
     collision = False
+    color=['#ff0000','#0000ff','#00ff00']
+    # ボールの描画と位置計算
+    ball_p = pg.Vector2(r.randint(0,768), r.randint(0,360)) # x=50, y=90 (px)
+    ball_v = pg.Vector2(r.randint(1,3),r.randint(1,3))
+    ball_r = r.randint(12,24) # ボールの半径
+    ball_c = pg.Color(f'{color[r.randint(0,2)]}')
     ground_img = pg.image.load(f'data/img/map-ground-center.png')
     ground_s   = pg.Vector2(48,48)
     plate_img =pg.image.load(f'data/img/plate.png')
@@ -115,7 +122,25 @@ def main():
                 screen.blit(plate_img,(x,y-48))
         for x in range(0,disp_w,int(ground_s.x)):
             screen.blit(ground_img,(x,disp_h-ground_s.y))
+        
+        pg.draw.circle(screen,ball_c,ball_p,ball_r,)
+        ball_p += ball_v
+        
+        ## 上下との衝突処理
+        if ball_p.y >= disp_h - ground_s.y - ball_r :
+          ball_p.y = disp_h - ground_s.y - ball_r
+          ball_v.y = - 0.8 * ball_v.y
+        elif ball_p.y - ball_r < 0:
+          ball_p.y = ball_r
+          ball_v.y = -0.8 * ball_v.y
 
+        ## 右端と左端との衝突
+        if ball_p.x + ball_r > disp_w :
+          ball_p.x = disp_w - ball_r
+          ball_v.x = -0.8 * ball_v.x 
+        elif ball_p.x - ball_r < 0:
+          ball_p.x = ball_r
+          ball_v.x = -0.8 * ball_v.x
         # 各キャラの移動コマンドの処理
         for p, char in enumerate(char_arr):
             if not char.is_moving :
