@@ -58,7 +58,7 @@ class PlayerCharacter:
 # ゲームループを含むメイン処理
 def main():
     pg.init()
-    pg.display.set_caption('タイトル')
+    pg.display.set_caption('草原で遊ぼう')
     map_s  = pg.Vector2(16,9)
     disp_w = int(chip_s*map_s.x)
     disp_h = int(chip_s*map_s.y)
