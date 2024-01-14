@@ -67,6 +67,7 @@ def main():
     frame  = 0
     exit_flag = False
     exit_code = '000'
+    collision = False
     ground_img = pg.image.load(f'data/img/map-ground-center.png')
     ground_s   = pg.Vector2(48,48)
     plate_img =pg.image.load(f'data/img/plate.png')
@@ -84,8 +85,8 @@ def main():
     
     # キャラの生成・初期化
     char_arr = []
-    char_arr.append(PlayerCharacter('red',(3,4),'./data/img/reimu.png'))
-    char_arr.append(PlayerCharacter('blue',(12,4),'./data/img/marisa.png'))
+    char_arr.append(PlayerCharacter('reimu',(3,4),'./data/img/reimu.png'))
+    char_arr.append(PlayerCharacter('marisa',(12,4),'./data/img/marisa.png'))
     for _ in char_arr:
         cmd_move.append(-1)
         cmd_move_km.append([])
@@ -121,9 +122,35 @@ def main():
                 if cmd_move[p] != -1:
                     char.turn_to(cmd_move[p])
                     af_pos = char.pos + m_vec[cmd_move[p]] # 移動(仮)した座標
-                    if (0 <= af_pos.x <= map_s.x-1) and (0 <= af_pos.y <= map_s.y-2) :
-                        char.move_to(m_vec[cmd_move[p]]) # 画面範囲内なら移動指示
-                        
+                    # 衝突検出
+                    for other_char in char_arr:
+                        if other_char != char and other_char.pos == af_pos:
+                            collision = True
+                            break
+                    # 衝突があった場合、または画面範囲外の場合は移動しない
+                    if (0 <= af_pos.x <= map_s.x-1) and (0 <= af_pos.y <= map_s.y-2):
+                        for other_char in char_arr:
+                            if other_char != char and other_char.pos == af_pos:
+                                collision = True
+                                break
+                        # 衝突がなければ移動
+                        if not collision:
+                            char.move_to(m_vec[cmd_move[p]]) # 画面範囲内なら移動指示
+                        else:
+                        # 衝突があった場合、他の方向に移動
+                            for i in range(4): # 4方向を試す
+                              new_dir = (cmd_move[p] + i) % 4
+                              new_pos = char.pos + m_vec[new_dir]
+                              if (0 <= new_pos.x <= map_s.x-1) and (0 <= new_pos.y <= map_s.y-1) :
+                                collision = False
+                                for other_char in char_arr:
+                                  if other_char != char and other_char.pos == new_pos:
+                                    collision = True
+                                    break
+                                if not collision:
+                                  char.turn_to(new_dir)
+                                  char.move_to(m_vec[new_dir]) # 他の方向に移動
+                                  break
             # キャラが移動中ならば、移動アニメ処理の更新
             if char.is_moving:
                 char.update_move_process()
